@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Home, Globe, Heart, Search, Flame, Star, ShieldAlert, Fingerprint, ChevronRight, PlayCircle } from 'lucide-react';
+import { Home, Globe, Heart, Search, Flame, Star, ShieldAlert, ChevronRight, PlayCircle, LogOut, User } from 'lucide-react';
 
 // --- MOCK DATA ---
 const SITES = [
@@ -13,36 +13,10 @@ const SITES = [
 
 // --- COMPONENTS ---
 
-// 1. PIN Screen
-const PinScreen = ({ onUnlock }) => {
-  const [pin, setPin] = useState('');
-  const [error, setError] = useState(false);
-
-  const handlePress = (num) => {
-    if (pin.length < 4) {
-      const newPin = pin + num;
-      setPin(newPin);
-      if (newPin.length === 4) {
-        if (newPin === '6969') {
-          onUnlock();
-        } else {
-          setError(true);
-          setTimeout(() => {
-            setPin('');
-            setError(false);
-          }, 500);
-        }
-      }
-    }
-  };
-
-  const handleDelete = () => {
-    setPin(pin.slice(0, -1));
-  };
-
+// 1. Login Screen
+const LoginScreen = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full w-full bg-[#0A0A0A] text-white p-6 relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#ff1744] opacity-10 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div className="mb-12 flex flex-col items-center">
@@ -53,54 +27,22 @@ const PinScreen = ({ onUnlock }) => {
         <p className="text-gray-500 mt-2 text-sm uppercase tracking-widest">Premium Adult Access</p>
       </div>
 
-      <div className="flex space-x-4 mb-12">
-        {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
-              pin.length > i
-                ? 'bg-[#ff1744] shadow-[0_0_10px_#ff1744]'
-                : error ? 'bg-red-800' : 'bg-gray-800'
-            }`}
-          />
-        ))}
+      <div className="w-full max-w-xs flex flex-col gap-4">
+        <a
+          href="/api/login"
+          className="w-full bg-[#ff1744] hover:bg-[#e6163d] text-white font-black uppercase tracking-widest py-4 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(255,23,68,0.4)] transition-all hover:shadow-[0_0_40px_rgba(255,23,68,0.6)] hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+          </svg>
+          Войти через Replit
+        </a>
+        <p className="text-center text-gray-600 text-xs">
+          Поддерживает Google, GitHub, X, Apple, email
+        </p>
       </div>
 
-      <p className={`mb-8 h-6 text-sm font-bold ${error ? 'text-[#ff1744]' : 'text-transparent'}`}>
-        ХУЁВЫЙ ПАРОЛЬ. ДАВАЙ ЗАНОВО.
-      </p>
-
-      <div className="grid grid-cols-3 gap-6 mb-8 w-full max-w-[280px]">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <button
-            key={num}
-            onClick={() => handlePress(num.toString())}
-            className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-light text-white bg-white/5 active:bg-[#ff1744]/20 active:text-[#ff1744] transition-all border border-white/5"
-          >
-            {num}
-          </button>
-        ))}
-        <button
-          onClick={() => {}}
-          className="w-20 h-20 rounded-full flex items-center justify-center text-gray-500 active:text-[#ff1744] transition-all"
-        >
-          <Fingerprint size={32} />
-        </button>
-        <button
-          onClick={() => handlePress('0')}
-          className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-light text-white bg-white/5 active:bg-[#ff1744]/20 active:text-[#ff1744] transition-all border border-white/5"
-        >
-          0
-        </button>
-        <button
-          onClick={handleDelete}
-          className="w-20 h-20 rounded-full flex items-center justify-center text-gray-500 active:text-white transition-all text-xl font-bold uppercase"
-        >
-          DEL
-        </button>
-      </div>
-
-      <p className="text-gray-600 text-xs mt-auto">Для входа введи 6969</p>
+      <p className="text-gray-700 text-xs mt-auto">18+ только для совершеннолетних</p>
     </div>
   );
 };
@@ -194,20 +136,67 @@ const SearchView = () => (
   </div>
 );
 
-// 4. App Shell
-export default function App() {
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [activeTab, setActiveTab] = useState('home');
+// 4. User Avatar
+const UserAvatar = ({ user }) => {
+  if (user.profileImageUrl) {
+    return (
+      <img
+        src={user.profileImageUrl}
+        alt={user.username || 'User'}
+        className="w-8 h-8 rounded-full object-cover border border-white/10"
+      />
+    );
+  }
+  return (
+    <div className="w-8 h-8 rounded-full bg-[#ff1744]/20 border border-[#ff1744]/30 flex items-center justify-center">
+      <User size={16} className="text-[#ff1744]" />
+    </div>
+  );
+};
 
-  if (!isUnlocked) {
+// 5. App Shell
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('home');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/user', { credentials: 'include' })
+      .then((res) => {
+        if (res.status === 401) return null;
+        if (!res.ok) throw new Error('Failed to fetch user');
+        return res.json();
+      })
+      .then((data) => {
+        setUser(data);
+        setAuthLoading(false);
+      })
+      .catch(() => {
+        setUser(null);
+        setAuthLoading(false);
+      });
+  }, []);
+
+  if (authLoading) {
+    return (
+      <div className="bg-[#0A0A0A] w-full min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#ff1744] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="bg-[#0A0A0A] w-full min-h-screen flex justify-center font-sans">
         <div className="w-full max-w-md h-screen">
-          <PinScreen onUnlock={() => setIsUnlocked(true)} />
+          <LoginScreen />
         </div>
       </div>
     );
   }
+
+  const displayName = user.username || user.firstName || user.email?.split('@')[0] || 'User';
 
   return (
     <div className="bg-[#0A0A0A] w-full min-h-screen text-white flex justify-center font-sans">
@@ -223,9 +212,39 @@ export default function App() {
               ULTRA
             </span>
           </div>
-          <button className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-            <Star size={18} className="text-[#ff1744]" />
-          </button>
+
+          {/* User menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full pl-2 pr-3 py-1 transition-all"
+            >
+              <UserAvatar user={user} />
+              <span className="text-xs font-bold text-gray-300 max-w-[80px] truncate">{displayName}</span>
+            </button>
+
+            {showUserMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowUserMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-white/5">
+                    <p className="text-white font-bold text-sm truncate">{displayName}</p>
+                    {user.email && <p className="text-gray-500 text-xs truncate">{user.email}</p>}
+                  </div>
+                  <a
+                    href="/api/auth/logout"
+                    className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-[#ff1744] hover:bg-white/5 transition-all text-sm font-bold"
+                  >
+                    <LogOut size={16} />
+                    Выйти
+                  </a>
+                </div>
+              </>
+            )}
+          </div>
         </header>
 
         {/* Dynamic Content */}
