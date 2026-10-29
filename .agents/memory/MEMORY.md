@@ -1,0 +1,1 @@
+- [Dependency firewall](dependency-firewall.md) — when post-merge installs are blocked, update unsafe transitive versions instead of bypassing package security checks.
